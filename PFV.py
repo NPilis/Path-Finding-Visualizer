@@ -8,8 +8,8 @@ import os
 # All needed global variables
 W, H, N = (1000, 1000, 50)
 col = row = N
-black, white, blue, purple, green, red, yellow = ((0, 0, 0), (255, 255, 255), (0, 0, 255),
-                                                  (128, 0, 128), (0, 230, 0), (220, 20, 60), (255, 255, 0))
+black, white, blue, purple, green, red, yellow = ((0, 0, 0), (255, 255, 255), (234,84,85),
+                                                  (128, 0, 128), (0, 203, 95), (55, 65, 64), (255, 255, 0))
 
 
 # Representation of node
@@ -38,7 +38,33 @@ class Node:
             pygame.draw.rect(screen, color, (self.x * W // N, self.y * W // N, W // N, H // N), thickness)
             pygame.display.update()
 
-    def add_neighbors(self, grid):
+    def add_neighbors1(self, grid):
+
+        if self.x < col - 1 and not grid[self.x + 1][self.y].blocked:
+            self.neighbors.append(grid[self.x + 1][self.y])
+
+        if self.x > 0 and not grid[self.x - 1][self.y].blocked:
+            self.neighbors.append(grid[self.x - 1][self.y])
+
+        if self.y < row - 1 and not grid[self.x][self.y + 1].blocked:
+            self.neighbors.append(grid[self.x][self.y + 1])
+
+        if self.y > 0 and not grid[self.x][self.y - 1].blocked:
+            self.neighbors.append(grid[self.x][self.y - 1])
+
+        if self.x - 1 >= 0 and self.y - 1 >= 0 and not grid[self.x - 1][self.y - 1].blocked:
+            self.neighbors.append(grid[self.x - 1][self.y - 1])
+
+        if self.x - 1 >= 0 and self.y + 1 < row - 1 and not grid[self.x - 1][self.y + 1].blocked:
+            self.neighbors.append(grid[self.x - 1][self.y + 1])
+
+        if self.x + 1 < col - 1 and self.y - 1 >= 0 and not grid[self.x + 1][self.y - 1].blocked:
+            self.neighbors.append(grid[self.x + 1][self.y - 1])
+
+        if self.x + 1 < col - 1 and self.y + 1 < row - 1 and not grid[self.x + 1][self.y + 1].blocked:
+            self.neighbors.append(grid[self.x + 1][self.y + 1])
+
+    def add_neighbors2(self, grid):
 
         if self.x < col - 1 and not grid[self.x + 1][self.y].blocked:
             self.neighbors.append(grid[self.x + 1][self.y])
@@ -56,7 +82,7 @@ class Node:
 # Creating row by col grid of Nodes and initializing neighbors
 def create_grid():
     global grid
-    screen.fill(black)
+    screen.fill((210,210,210))
     grid = [0 for _ in range(col)]
 
     for i in range(col):
@@ -93,9 +119,15 @@ def draw_block(pos):
 
 
 def create_neighbors():
-    for i in range(col):
-        for j in range(row):
-            grid[i][j].add_neighbors(grid)
+    assertion = nb_type.get()
+    if assertion:
+        for i in range(col):
+            for j in range(row):
+                grid[i][j].add_neighbors2(grid)
+    else:
+        for i in range(col):
+            for j in range(row):
+                grid[i][j].add_neighbors1(grid)
 
 
 def heurisitic(node):
@@ -165,6 +197,7 @@ def a_star():
 
     messagebox.showinfo("Result message", "Couldn't find the shortest path")
 
+
 def dijkstra():
     create_neighbors()
     open_list = []
@@ -206,7 +239,6 @@ def dijkstra():
     messagebox.showinfo("Result message", "Couldn't find the shortest path")
 
 
-
 def bfs():
     pass
 
@@ -218,6 +250,7 @@ def dfs():
 def main():
     global root
     global screen
+    global nb_type
 
     root = tk.Tk()
     embed = tk.Frame(root, width=W, height=H)
@@ -249,6 +282,8 @@ def main():
     Button(buttonwin, bg='purple', relief=GROOVE, borderwidth=0, height=1, width=2).grid(row=7, column=1)
     Button(buttonwin, bg='red', relief=GROOVE, borderwidth=0, height=1, width=2).grid(row=9, column=0)
     Button(buttonwin, bg='limegreen', relief=GROOVE, borderwidth=0, height=1, width=2).grid(row=9, column=1)
+    nb_type = BooleanVar()
+    Checkbutton(buttonwin, variable=nb_type, text="Cross neighbor").grid(row=4,column=1)
 
     os.environ['SDL_WINDOWID'] = str(embed.winfo_id())
     os.environ['SDL_VIDEODRIVER'] = 'windib'
